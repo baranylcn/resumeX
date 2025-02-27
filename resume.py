@@ -3,13 +3,13 @@ import google.generativeai as genai
 import os
 import PyPDF2
 from dotenv import load_dotenv
-import io  # io modülünü ekledik
+import io  
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("YOUR_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)  # API anahtarını yapılandırdık
+genai.configure(api_key=GEMINI_API_KEY)  
 
-Model = genai.GenerativeModel("gemini-2.0-flash-lite")  # Modeli bir kez tanımladık
+Model = genai.GenerativeModel("gemini-2.0-flash-lite") 
 
 
 def extract_text_from_pdf(uploaded_file):
@@ -26,7 +26,7 @@ def extract_text_from_pdf(uploaded_file):
 
 
 def analyzecv_pdf_withllm(text):
-    # CV'yi Gemini ile analiz ederiz
+  
     prompt = f"""
 You are a software engineering recruitment specialist. Analyze the CV provided below to assess the candidate's technical skills and experience.  
 
@@ -104,9 +104,9 @@ uploaded_file = st.file_uploader("Upload your Resume (PDF)", type="pdf")
 
 if uploaded_file is not None:
     text = extract_text_from_pdf(uploaded_file)
-    if text:  # PDF okuma başarılıysa analizi yap
+    if text: 
         with st.spinner("Analyzing Resume..."):
             analysis_result = analyzecv_pdf_withllm(text)
-            if analysis_result:  # API çağrısı başarılıysa sonucu göster
+            if analysis_result: 
                 st.subheader("Resume Analysis Results")
                 st.write(analysis_result)
