@@ -3,14 +3,15 @@ import google.generativeai as genai
 import os
 import PyPDF2
 from dotenv import load_dotenv
-import io  
+import io
+import re
+import json
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("YOUR_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)  
 
 Model = genai.GenerativeModel("gemini-2.0-flash-lite") 
-
 
 def extract_text_from_pdf(uploaded_file):
     """Yüklenen PDF dosyasından metni ayıklar."""
@@ -21,92 +22,146 @@ def extract_text_from_pdf(uploaded_file):
             text += page.extract_text()
         return text
     except Exception as e:
-        st.error(f"PDF okuma hatası: {e}")
+        st.error(f"PDF reading error: {e}")
         return None
 
-
-def analyzecv_pdf_withllm(text):
-  
+def analyzecv_pdf_withllm(text, report_language):
     prompt = f"""
-You are a software engineering recruitment specialist. Analyze the CV provided below to assess the candidate's technical skills and experience.  
+You are a globally experienced HR and career evaluation expert with deep cross-industry insight. You will perform an extremely detailed, holistic analysis of the CV provided below. Go beyond numeric scoring — offer professional interpretation, inferences, and personalized guidance based on the profile.
 
-💡 **Important Notes:**  
-- **Determine the language of the CV** and provide the analysis in **the same language**.  
-- If the CV is entirely in **English**, respond in **English**. If it's in **Turkish**, respond in **Turkish**.  
-- If the CV contains mixed languages, select the **most dominant language** and respond accordingly.  
-- If some sections are missing, **analyze based on the available information**.  
+GENERAL INSTRUCTIONS:
+- Detect and report the actual language of the CV content.
+- Regardless of the detected language, generate the entire report in the selected report language below.
+- Respond in {report_language}.
+- Be objective, professional, and constructive in tone.
+- If certain sections are missing, infer from available information.
+- Follow international career evaluation best practices.
+- Ensure all scoring (0–100) is balanced and evidence-based. Do not give overly generous or overly harsh scores. Each score must reflect the content quality, quantity, and relevance in the CV.
 
----
+* 1. LANGUAGE DETECTION
+Identify the dominant language of the CV.
 
-### **1️. Software Domain Analysis**  
-- Identify the **top 3 most suitable software domains** for the candidate.  
-- Consider the **Summary, Cover Letter, Experience, Projects, and Education** sections when evaluating.  
-- Assign scores **out of a total of 100 points** across the three domains.  
+* 2. CAREER DOMAIN MATCHING
+Identify the top 3 most suitable career domains for this candidate.
+For each domain:
+- Give a score out of 100
+- Justify why the candidate fits that domain (based on experience, skills, education, etc.)
+- Optionally mention related roles the candidate could consider
 
-📌 **Table Format:**  
-| Domain | Score |
-|----------|------|
-| Domain 1 | XX  |
-| Domain 2 | XX  |
-| Domain 3 | XX  |
+* 3. COMPETENCY EVALUATION
+Evaluate the candidate across 10 dimensions. For each, give:
+- A score out of 100
+- Specific strengths and examples from the CV
+- Observations or red flags (if any)
 
----
+* 4. STRATEGIC INSIGHTS & INTERPRETATION
+- Based on the full CV, what type of roles is this candidate most suited for now?
+- What future roles could be targeted with slight improvements?
+- Are there signs of underutilized potential?
+- Does the profile indicate a specialist or generalist tendency?
+- Are there inconsistencies or missing data that should be improved?
 
-### **2️. Technical and General Assessment**  
-Evaluate the candidate's competencies based on the following criteria and **assign a score between 0 and 100**:  
-- **Technical Skills:** Programming languages, frameworks, databases, cloud technologies  
-- **Experience & Projects:** Work history, project roles, responsibilities  
-- **Education & Certifications:** Degrees, bootcamps, certifications, academic achievements  
-- **Problem-Solving Ability:** Algorithms, data structures, optimization skills  
-- **Communication & Teamwork:** Technical documentation, collaboration, mentoring experience  
-- **Open Source Contributions & Side Projects:** GitHub activity, contributions, independent projects  
+* 5. DEVELOPMENT RECOMMENDATIONS
+Provide clear, practical and personalized suggestions for how the candidate can improve:
+- Skills, certifications, degrees
+- Portfolio, communication, network
 
-📌 **Table Format:**  
-| Criterion | Score |
-|----------------------------|------|
-| Technical Skills           | XX/100 |
-| Experience & Projects      | XX/100 |
-| Education & Certifications | XX/100 |
-| Problem-Solving Ability    | XX/100 |
-| Communication & Teamwork   | XX/100 |
-| Open Source & Side Projects | XX/100 |
+* 6. COMPARATIVE BENCHMARKING (OPTIONAL)
 
----
+* 7. OVERALL SUMMARY
 
-### **3️. Overall Evaluation**  
-Assess the candidate's **overall performance out of 100 points** and summarize their strengths and weaknesses.  
+Absolutely follow the JSON format shown below. Do not add any text, comments, or explanations outside the JSON structure.
 
-📌 **Example Output:**  
-- **Overall Score:** XX/100  
-- **Strengths:** Strong technical skills, extensive experience, etc.  
-- **Weaknesses:** Lack of open-source contributions, weak problem-solving skills, etc.  
+{{
+  "language": "The actual dominant language of the CV (not the report language)",
+  "domain_scores": [
+    {{"domain": "Domain Name", "score": 88, "justification": "Why this domain fits"}}
+  ],
+  "competency_scores": [
+    {{"category": "Core Skills & Tools", "score": 85, "strength": "X", "observation": "Y"}}
+  ],
+  "strategic_insights": "Full paragraph insight",
+  "development_recommendations": [
+    "Recommendation 1",
+    "Recommendation 2"
+  ],
+  "comparative_benchmarking": "Paragraph comparing this candidate with others",
+  "overall_summary": {{
+    "overall_score": 87,
+    "key_strengths": ["Strength 1", "Strength 2"],
+    "areas_to_improve": ["Weakness 1", "Weakness 2"],
+    "talent_potential": "High / Moderate / Needs Development"
+  }}
+}}
 
----
-
-📌 **Language Detection:**  
-First, **detect the language of the CV**. If the CV is in **English**, provide the response in **English**. If it's in **Turkish**, respond in **Turkish**.  
-
-**CV Content:**  
+CV Content:
 {text}
 """
-
     try:
         response = Model.generate_content(prompt)
-        return response.text
+        raw_text = response.text
+        match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+        if not match:
+            st.error("Sorry, the analysis could not be completed. Please try again later or upload a different file.")
+            return None
+        json_str = match.group(0)
+        return json.loads(json_str)
     except Exception as e:
-        st.error(f"Gemini API hatası: {e}")
+        st.error("An error occurred while processing your resume. Please try again or upload a different file.")
         return None
-
 
 st.title("Advanced Resume Analysis Application")
 
 uploaded_file = st.file_uploader("Upload your Resume (PDF)", type="pdf")
 
-if uploaded_file is not None:
+if uploaded_file:
     text = extract_text_from_pdf(uploaded_file)
-    if text: 
-        with st.spinner("Analyzing Resume..."):
-            analysis_result = analyzecv_pdf_withllm(text)
-            if analysis_result: 
-                st.subheader("Resume Analysis Results")
-                st.write(analysis_result)
+    if text:
+        # Language selector after PDF
+        st.subheader("Select report language")
+        language_options = ["English", "German", "French", "Italian", "Russian", "Turkish", "Spanish"]
+        selected_language = st.selectbox("Choose a language for the report", language_options)
+
+        # Trigger analysis
+        if st.button("Analyze Resume"):
+            with st.spinner("Analyzing Resume..."):
+                result = analyzecv_pdf_withllm(text, selected_language)
+                if result:
+                    st.subheader("Detected Language")
+                    st.write(result.get("language", "Not detected"))
+
+                    st.subheader("Career Domain Fit Scores")
+                    domain_data = result.get("domain_scores", [])
+                    if domain_data:
+                        st.table([{ "Domain": d["domain"], "Score": d["score"], "Justification": d["justification"] } for d in domain_data])
+
+                    st.subheader("Competency Evaluation")
+                    comp_data = result.get("competency_scores", [])
+                    if comp_data:
+                        st.table([{ 
+                            "Category": c["category"], 
+                            "Score": c["score"], 
+                            "Strength": c["strength"], 
+                            "Observation": c["observation"] 
+                        } for c in comp_data])
+
+                    st.subheader("Strategic Insights")
+                    st.write(result.get("strategic_insights", "N/A"))
+
+                    st.subheader("Development Recommendations")
+                    for rec in result.get("development_recommendations", []):
+                        st.markdown(f"- {rec}")
+
+                    st.subheader("Comparative Benchmarking")
+                    st.write(result.get("comparative_benchmarking", "N/A"))
+
+                    st.subheader("Overall Summary")
+                    summary = result.get("overall_summary", {})
+                    st.markdown(f"**Overall Score:** {summary.get('overall_score', 'N/A')}/100")
+                    st.markdown("**Key Strengths:**")
+                    for strength in summary.get("key_strengths", []):
+                        st.markdown(f"- {strength}")
+                    st.markdown("**Areas to Improve:**")
+                    for area in summary.get("areas_to_improve", []):
+                        st.markdown(f"- {area}")
+                    st.markdown(f"**Talent Potential:** {summary.get('talent_potential', 'N/A')}")
