@@ -1,11 +1,3 @@
-"""Resume Analysis Application for PDF resumes.
-
-This module provides functionality to extract text from PDF resumes and 
-analyze them using Google's Generative AI (Gemini). The analysis includes
-language detection, domain matching, competency evaluation, strategic insights,
-and development recommendations.
-"""
-
 import streamlit as st
 import google.generativeai as genai
 import os
