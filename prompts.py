@@ -1,10 +1,3 @@
-"""Collection of prompts used for the Resume Analysis application.
-
-This module contains specialized prompts for various LLM-based analysis functions
-used in the resume analysis application. Keeping prompts separate from the main
-code improves maintainability and allows for easier prompt engineering.
-"""
-
 def get_resume_analysis_prompt(text: str, report_language: str) -> str:
     """Generate a complete prompt for resume analysis with the LLM.
     
