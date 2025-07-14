@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import io
 import re
 import json
-from typing import Dict, List, Optional, Any, Union
+from typing import Any
 from prompts import get_resume_analysis_prompt
 
 load_dotenv()
