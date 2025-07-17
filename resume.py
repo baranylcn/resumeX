@@ -10,8 +10,13 @@ from typing import Any
 from prompts import get_resume_analysis_prompt
 
 load_dotenv()
-GEMINI_API_KEY = os.getenv("YOUR_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)  
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise EnvironmentError(
+        "Missing GEMINI_API_KEY. "
+        "Set it in your shell or add it to .env / Streamlit secrets."
+    )
+genai.configure(api_key=GEMINI_API_KEY)
 
 Model = genai.GenerativeModel("gemini-2.0-flash-lite") 
 
