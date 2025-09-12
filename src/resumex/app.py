@@ -7,7 +7,10 @@ import io
 import re
 import json
 from typing import Any
-from prompts import get_resume_analysis_prompt
+try:
+    from resumex.prompts import get_resume_analysis_prompt
+except ImportError:
+    from prompts import get_resume_analysis_prompt
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
