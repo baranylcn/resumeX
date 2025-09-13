@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "resumex"
+version = "0.1.0"
+description = "AI-powered CV analysis"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Happy Hacking Space" }]
+license = { text = "MIT" }
+
+dependencies = [
+  "streamlit>=1.30.0",
+  "google-generativeai>=0.7.0",
+  "pypdf>=4.0.0",
+  "python-dotenv>=1.0.0",
+  'typing-extensions; python_version < "3.11"',
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "pytest-mock>=3.12.0",
+  "ruff>=0.5.0",
+  "black>=24.1.0",
+  "mypy>=1.8.0",
+]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+extend-exclude = [
+  ".git", ".mypy_cache", ".ruff_cache", ".pytest_cache", "build", "dist", "venv", ".venv",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests", "."]
+python_files = ["test_*.py", "*_test.py"]
+pythonpath = ["src"]

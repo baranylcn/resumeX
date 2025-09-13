@@ -17,7 +17,7 @@ ResumeX is an advanced AI-powered CV analysis application that provides comprehe
   - Comparative benchmarking
 * **Structured JSON Output:** Clean, parseable analysis results.
 * **User-Friendly Interface:** The interface, built with Streamlit, provides easy and intuitive use.
-* **Environment Configuration:** Secure API key management with .env support.
+* **Environment Configuration:** Secure API key management with `.env` support.
 
 ## Installation
 
@@ -27,21 +27,26 @@ ResumeX is an advanced AI-powered CV analysis application that provides comprehe
    cd resumeX
    ```
 
-2. Install dependencies:
+2. Install dependencies (using `pyproject.toml`):
+   ```bash
+   pip install -e .[dev]
+   ```
+
+   Or with `requirements.txt` (legacy):
    ```bash
    pip install -r requirements.txt
    ```
 
 3. Create a `.env` file in the project root and add your Gemini API key:
-   ```
-   YOUR_API_KEY=your_gemini_api_key_here
+   ```bash
+   GEMINI_API_KEY=your_gemini_api_key_here
    ```
 
 ## Usage
 
 1. Run the application:
    ```bash
-   streamlit run resume.py
+   streamlit run src/resumex/app.py
    ```
 
 2. Upload your CV in PDF format.
