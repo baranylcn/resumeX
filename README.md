@@ -23,7 +23,7 @@ ResumeX is an advanced AI-powered CV analysis application that provides comprehe
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone resumeX
    cd resumeX
    ```
 
